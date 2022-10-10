@@ -96,11 +96,11 @@ exports.resetpassword = (args) => {
 
         transporter.sendMail({
             'context': {
-                'link': [__settings.client.auth, '/reset-password?userId=', args.result.userId, '&password=', args.result.password, '&appId=', args.result.app.appId, '&returl=', args.result.app.url, '/authenticate'].join(''),
+                'link': [__settings.client.auth, '/reset-password?userId=', args.result.userId, '&password=', args.result.password, '&appId=', __settings.client.appId, '&returl=', __settings.client.metgovisAppName, '/authenticate'].join(''),
                 'name': [args.result.name.first, args.result.name.last].join(' ')
             },
             'to': __settings.production ? args.result.email : __settings.smtp.auth.user,
-            'from': __settings.production ? 'support@bitid.co.za' : __settings.smtp.auth.user,
+            'from': __settings.production ? 'admin@metgovis.co.za' : __settings.smtp.auth.user,
             'subject': 'Reset Password',
             'template': 'reset-password'
         }, (error, info) => {

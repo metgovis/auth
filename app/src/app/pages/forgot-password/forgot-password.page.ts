@@ -77,6 +77,7 @@ export class ForgotPasswordPage implements OnInit, OnDestroy {
 					},
 					replaceUrl: true
 				});
+				this.toast.show("Verification sent to the specified email address");
 			}
 		} else {
 			this.toast.show(response.error.message);

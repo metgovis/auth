@@ -544,3 +544,50 @@ END CATCH
 GO
 
 -- SET6
+
+-- SET7
+PRINT 'Executing dbo.v1_Auth_Change_Password.PRC'
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE name = 'v1_Auth_Change_Password' AND type = 'P')
+BEGIN
+	DROP PROCEDURE [dbo].[v1_Auth_Change_Password]
+END
+GO
+
+CREATE PROCEDURE [dbo].[v1_Auth_Change_Password]
+	@salt VARCHAR(255),
+	@hash VARCHAR(255),
+	@userId INT
+AS
+
+SET NOCOUNT ON
+
+BEGIN TRY
+	UPDATE
+		[dbo].[tblUsers]
+	SET	
+		[salt] = @salt,
+		[hash] = @hash
+	WHERE
+		[id] = @userId
+
+	SELECT
+		[id] AS [_id],
+		[salt],
+		[hash]
+	FROM
+		[dbo].[tblUsers]
+	WHERE
+		[id] = @userId
+
+	SELECT @@ROWCOUNT AS [n]
+	RETURN 1
+END TRY
+
+BEGIN CATCH
+	SELECT Error_Message() AS [message], 503 AS [code]
+	RETURN 0
+END CATCH
+
+-- SET7

@@ -1942,41 +1942,9 @@ var module = function () {
 			transaction.begin()
 				.then(res => {
 					return new sql.Request(transaction)
-						.input('userId', args.req.body.header.userId)
-						.execute('v1_Users_Get');
-				}, null)
-				.then(result => {
-					var deferred = Q.defer();
-
-					if (result.returnValue == 1 && result.recordset.length > 0) {
-						args.user = unwind(result.recordset[0]);
-						var password = tools.encryption.sha512(args.req.body.old, args.user.salt);
-
-						if (password.hash == args.user.hash) {
-							var password = tools.encryption.saltHashPassword(args.req.body.new);
-							args.req.body.salt = password.salt;
-							args.req.body.hash = password.hash;
-							deferred.resolve(args);
-						} else {
-							err.error.errors[0].code = 401;
-							err.error.errors[0].reason = 'Password is incorrect!';
-							err.error.errors[0].message = 'Password is incorrect!';
-							deferred.reject(err);
-						};
-					} else {
-						err.error.errors[0].code = 69;
-						err.error.errors[0].reason = 'Account not yet registered!';
-						err.error.errors[0].message = 'Account not yet registered!';
-						deferred.reject(err);
-					};
-
-					return deferred.promise;
-				}, null)
-				.then(res => {
-					return new sql.Request(transaction)
-						.input('salt', args.req.body.salt)
-						.input('hash', args.req.body.hash)
-						.input('userId', args.req.body.header.userId)
+						.input('userId', args.req.body.userId)
+						.input('salt', args.password.salt)
+						.input('hash', args.password.hash)
 						.execute('v1_Auth_Change_Password');
 				}, null)
 				.then(result => {
@@ -1998,7 +1966,7 @@ var module = function () {
 					return new sql.Request(transaction)
 						.input('scope', args.req.originalUrl)
 						.input('appId', args.req.body.header.appId)
-						.input('userId', args.req.body.header.userId)
+						.input('userId', args.req.body.userId)
 						.execute('v1_Usage_Add');
 				}, null)
 				.then(result => {

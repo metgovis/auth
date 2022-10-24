@@ -44,7 +44,7 @@ exports.verify = (args) => {
 exports.welcome = (args) => {
     var deferred = Q.defer();
 
-    const transporter = nodemailer.createTransport(__settings.smtp);
+    const transporter = nodemailer.createTransport(JSON.parse(__settings.smtp));
 
     transporter.use('compile', hbs({
         'viewEngine': {

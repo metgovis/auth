@@ -144,7 +144,7 @@ exports.requestaccess = (args) => {
         return false;
     }
 
-    const transporter = nodemailer.createTransport(__settings.smtp);
+    const transporter = nodemailer.createTransport(JSON.parse(__settings.smtp));
 
     transporter.use('compile', hbs({
         'viewEngine': {

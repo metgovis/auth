@@ -32,6 +32,7 @@ try{
     __settings.client.drive = process.env.AUTH_CLIENT_DRIVE
     __settings.client.appName = process.env.AUTH_CLIENT_APPNAME
 
+    console.log('Settings Applied');
     console.log('__settings', __settings)
 
 

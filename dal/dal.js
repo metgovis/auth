@@ -2181,6 +2181,8 @@ var module = function () {
 					}
 				})
 				.catch(error => {
+					console.log(error)
+					
 					var err = new ErrorResponse();
 					err.error.errors[0].code = error.code;
 					err.error.errors[0].reason = error.message;

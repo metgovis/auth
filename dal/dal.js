@@ -335,6 +335,35 @@ var module = function () {
 			return deferred.promise;
 		},
 
+		adminList: (args) => {
+			var deferred = Q.defer();
+
+			const request = new sql.Request(__database);
+			request.input('appId', args.req.body.header.appId);
+
+			request.execute('v1_Apps_Admin_Users_List')
+				.then(result => {
+					if (result.returnValue == 1 && result.recordset.length > 0) {
+						deferred.resolve(result.recordset);
+					} else {
+						var err = new ErrorResponse();
+						err.error.errors[0].code = result.recordset[0].code;
+						err.error.errors[0].reason = result.recordset[0].message;
+						err.error.errors[0].message = result.recordset[0].message;
+						deferred.reject(err);
+					}
+				})
+				.catch(error => {
+					var err = new ErrorResponse();
+					err.error.errors[0].code = error.code;
+					err.error.errors[0].reason = error.message;
+					err.error.errors[0].message = error.message;
+					deferred.reject(err);
+				});
+
+			return deferred.promise;
+		},
+
 		share: (args) => {
 			var deferred = Q.defer();
 
@@ -2022,7 +2051,8 @@ var module = function () {
 							url: result[0].app.url,
 							name: result[0].app.name,
 							icon: result[0].app.icon,
-							appId: result[0]._id
+							appId: result[0]._id,
+							templateOverride: 'reset-password-on-period' 
 						};
 
 						deferred.resolve(args);
@@ -2047,16 +2077,21 @@ var module = function () {
 						args.users = result.recordset.map(o => unwind(o));
 						args.users = args.users.map(user => {
 							var password = tools.password();
-							user.salt = password.salt;
-							user.hash = password.hash;
-							user.password = password.value;
+							// user.salt = password.salt;
+							// user.hash = password.hash;
+							// user.password = password.value;
 							return {
 								result: {
 									app: args.app,
-									name: user.name,
+									salt: password.salt,
+									hash: password.hash,
+									name: {
+										first: user.name.first,
+										last: user.name.last
+									},
 									email: user.email,
 									userId: user.userId,
-									password: user.password
+									password: password.value
 								}
 							}
 						});
@@ -2073,9 +2108,9 @@ var module = function () {
 				}, null)
 				.then(res => {
 					return args.users.reduce((promise, user) => promise.then(() => new sql.Request(transaction)
-						.input('salt', user.salt)
-						.input('hash', user.hash)
-						.input('email', user.email)
+						.input('salt', user.result.salt)
+						.input('hash', user.result.hash)
+						.input('email', user.result.email)
 						.input('appId', __settings.client.appId)
 						.execute('v1_Auth_Reset_Password')
 					), Promise.resolve())

@@ -116,7 +116,7 @@ exports.resetpassword = (args) => {
           extName: ".hbs",
           layoutsDir: __dirname + "/templates",
           partialsDir: __dirname + "/templates",
-          defaultLayout: "reset-password.hbs",
+          defaultLayout: args.result.app.templateOverride ? args.result.app.templateOverride+".hbs" : "reset-password.hbs",
         },
         extName: ".hbs",
         viewPath: __dirname + "/templates",
@@ -147,7 +147,10 @@ exports.resetpassword = (args) => {
           ? "admin@metgovis.co.za"
           : __settings.smtp.auth.user,
         subject: "Reset Password",
-        template: "reset-password",
+        // We can specify a custom template for the email (located in the templates folder)
+        // This is for example used when automatically changing the password after a period of time
+        // Otherwise we default to the 'reset-password' template which is just the default email template.
+        template: args.result.app.templateOverride ? args.result.app.templateOverride : "reset-password",
       },
       (error, info) => {
         if (error) {
@@ -184,14 +187,12 @@ exports.resetpassword = (args) => {
 exports.requestaccess = (args) => {
   var deferred = Q.defer();
 
-  var to = args.app.bitid.auth.users
-    .filter((user) => user.role >= 4)
-    .map((o) => o.email);
+  var to = args.adminUsers.map((o) => o.email);
 
   if (to.length == 0) {
     deferred.resolve(args);
     console.error(
-      "Could not find admins to send email to for request access! Will proceed anyway!"
+      "Could not find admins to send email to for request access. Program will attempt to proceed without dispatching the 'request-access' email."
     );
     return false;
   }
@@ -215,20 +216,20 @@ exports.requestaccess = (args) => {
   transporter.sendMail(
     {
       context: {
-        app: args.app.app.name,
+        app: args.result.app.url,
         link: [
           __settings.client.auth,
           "/subscribers?id=",
           __settings.client.appId,
           "&type=app",
         ].join(""),
-        name: [args.user.name.first, args.user.name.last].join(" "),
+        name: [args.req.body.name.first, args.req.body.name.last].join(" "),
       },
       to: __settings.production ? to : __settings.smtp.auth.user,
       from: __settings.production
         ? "admin@metgovis.co.za"
         : __settings.smtp.auth.user,
-      subject: "Access Requested for " + args.app.app.name,
+      subject: "Access Requested for " + args.result.app.url,
       template: "request-access",
     },
     (error, info) => {

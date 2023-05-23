@@ -1105,3 +1105,68 @@ END CATCH
 GO
 
 -- SET16
+
+-- SET17
+PRINT 'Executing dbo.v1_Apps_Admin_Users_List.PRC'
+GO
+
+IF EXISTS (SELECT * FROM sys.objects WHERE name = 'v1_Apps_Admin_Users_List' AND type = 'P')
+BEGIN
+	DROP PROCEDURE [dbo].[v1_Apps_Admin_Users_List]
+END
+GO
+
+CREATE PROCEDURE [dbo].[v1_Apps_Admin_Users_List]
+	@appId INT
+AS
+
+/**
+	Retrieve a list of 'admin' users fora requested app.
+*/
+
+SET NOCOUNT ON
+
+BEGIN TRY
+
+	IF NOT EXISTS (SELECT TOP 1 [app].[id] FROM [dbo].[tblApps] AS [app])
+	BEGIN
+		SELECT 'App not found' AS [message], 69 AS [code]
+		RETURN 0
+	END
+
+	SELECT 
+		[tblApps].[id] AS [appId], 
+		[tblApps].[name] AS [appName], 
+		[userList].[email]
+	FROM 
+		[dbo].[tblApps]
+	INNER JOIN (
+		SELECT [userId], [role], [appId]
+		FROM [tblAppsUsers]
+		WHERE [appId] = @appId AND role >= 4
+	) AS [AppUsers] 
+		ON [tblApps].[id] = [AppUsers].[appId]
+	INNER JOIN (
+		SELECT [id], [email]
+		FROM [tblUsers]
+	) AS [userList] 
+		ON [AppUsers].[userId] = [userList].[id]
+	WHERE 
+		[tblApps].[id] = @appId
+	ORDER BY 
+		[tblApps].[name]
+	
+	IF (@@ROWCOUNT = 0)
+	BEGIN
+		SELECT 'No records found' AS [message], 69 AS [code]
+		RETURN 0
+	END
+
+	RETURN 1
+END TRY
+
+BEGIN CATCH
+	SELECT Error_Message() AS [message], 503 AS [code]
+	RETURN 0
+END CATCH
+-- SET17

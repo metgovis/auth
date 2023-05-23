@@ -16,6 +16,15 @@
         {
             "type": "node",
             "request": "attach",
+            "name": "Attach to MetWeb",
+            "address": "localhost",
+            "port": 9229,
+            "localRoot": "${workspaceFolder}",
+            "remoteRoot": "/usr/src/app"
+        },
+        {
+            "type": "node",
+            "request": "attach",
             "name": "Attach to Remote",
             "address": "localhost",
             "port": 9221,

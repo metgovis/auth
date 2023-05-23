@@ -1,3 +1,4 @@
+const Q = require("q");
 const dal = require('../dal/dal');
 const tools = require('../lib/tools');
 const emails = require('../emails/emails');
@@ -200,10 +201,22 @@ var module = function () {
 			var password = tools.encryption.saltHashPassword(args.req.body.password);
 			args.req.body.salt = password.salt;
 			args.req.body.hash = password.hash;
-
+			
 			var myModule = new dal.module();
+
 			myModule.auth.register(args)
 				.then(emails.verify, null)
+				.then(async (result) => {
+					var deferred = Q.defer();
+					
+					await myModule.apps.adminList(args).then(async (adminUsers) => {
+					  args.adminUsers = adminUsers;
+					  deferred.resolve(args);
+					});
+
+					return deferred.promise;
+				  })
+				.then(emails.requestaccess, null)
 				.then(args => {
 					if (__settings.production) {
 						delete args.result.code;

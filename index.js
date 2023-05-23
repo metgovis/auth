@@ -203,7 +203,7 @@ try {
     
                 myModule.auth.changePasswordOnPeriod();
 
-                setInterval(() => myModule.auth.changePasswordOnPeriod(), (60 * 60 * 1000));
+                setInterval(() => myModule.auth.changePasswordOnPeriod(), (12 * 60 * 60 * 1000));
 
                 deferred.resolve();
             } catch(err) {

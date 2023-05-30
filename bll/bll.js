@@ -207,6 +207,7 @@ var module = function () {
 			myModule.auth.register(args)
 				.then(emails.verify, null)
 				.then(async (result) => {
+					// Retrieve a list of admin users to address the email to
 					var deferred = Q.defer();
 					
 					await myModule.apps.adminList(args).then(async (adminUsers) => {

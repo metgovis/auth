@@ -72,6 +72,7 @@ export class SignUpPage implements OnInit, OnDestroy {
 				first: this.form.value.name.first
 			},
 			appId: params.appId,
+			appUrl: params.returl ? params.returl : '-',
 			email: this.form.value.email,
 			confirm: this.form.value.confirm,
 			password: this.form.value.password

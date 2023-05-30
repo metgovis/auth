@@ -216,7 +216,8 @@ exports.requestaccess = (args) => {
   transporter.sendMail(
     {
       context: {
-        app: args.result.app.url,
+        app: args.req.body.appUrl,
+        clientEmail: args.req.body.email,
         link: [
           __settings.client.auth,
           "/subscribers?id=",
@@ -229,7 +230,7 @@ exports.requestaccess = (args) => {
       from: __settings.production
         ? "admin@metgovis.co.za"
         : __settings.smtp.auth.user,
-      subject: "Access Requested for " + args.result.app.url,
+      subject: "Access Requested for " + args.req.body.appUrl,
       template: "request-access",
     },
     (error, info) => {
